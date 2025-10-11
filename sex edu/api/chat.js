@@ -1,61 +1,84 @@
-// Vercel Serverless Function 程式碼 (Node.js)
-// 負責安全地隱藏 Gemini API Key 並處理串流轉發
+/**
+ * Vercel Serverless Function: Gemini API Proxy
+ * Purpose: Securely handles streaming requests to the Gemini API.
+ * * 1. Hides the GEMINI_API_KEY by accessing it from Vercel's environment variables.
+ * 2. Uses Node.js's native fetch and Response streaming for real-time, character-by-character output.
+ */
 
-// 在 Vercel 環境中，我們使用 node-fetch 來進行外部 HTTP 請求
-import fetch from 'node-fetch'; 
+// Reads the API key securely from Vercel's environment variables.
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// 關鍵：從 Vercel 的環境變數中安全地讀取 API Key
-const apiKey = process.env.GEMINI_API_KEY;
+// The official Gemini API endpoint for content generation
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent';
 
+// Handler for Vercel Serverless Function
 export default async function handler(req, res) {
-    // 1. 安全性檢查
+    // 1. Initial Checks (Security and Configuration)
     if (req.method !== 'POST') {
-        res.status(405).send('Method Not Allowed');
-        return;
+        // Only allow POST requests from the client-side
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    if (!apiKey) {
-        // 如果密鑰未配置，回傳錯誤訊息，但不會暴露密鑰本身
-        res.status(500).send('Server Error: AI Key is not configured on the proxy.');
-        return;
+    if (!GEMINI_API_KEY) {
+        // Fail if the environment variable is not set (API Key is missing)
+        return res.status(500).json({ error: 'Server configuration error: GEMINI_API_KEY is not set.' });
     }
+
+    // Since Vercel is set up, the client request body (req.body) should contain:
+    // { contents: [{ parts: [{ text: "User prompt" }] }], systemInstruction: { ... } }
+    const requestBody = req.body;
+    
+    // Ensure the model knows we want streaming output
+    requestBody.config = {
+        ...(requestBody.config || {}),
+        stream: true
+    };
 
     try {
-        // 2. 解析前端發送的請求體 (包含用戶的 prompt 和系統指令)
-        const requestBody = req.body; 
-        
-        // 3. 構造對 Gemini 官方 API 的請求
-        // 使用 generateContentStream 實現串流效果
-        const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContentStream', {
+        // 2. Forward the request to the Gemini API
+        const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // 安全地將 API Key 加入到後端請求中
-                'x-goog-api-key': apiKey,
             },
-            // 將客戶端發送的 body 直接傳遞給 Gemini
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
         });
 
-        // 4. 錯誤處理
+        // 3. Handle non-OK responses from Gemini (e.g., rate limits, invalid keys)
         if (!geminiResponse.ok) {
-            // 嘗試讀取錯誤訊息並轉發狀態碼
-            const errorText = await geminiResponse.text();
-            res.status(geminiResponse.status).send(`Gemini API Error: ${errorText}`);
-            return;
+            const errorData = await geminiResponse.text();
+            console.error('Gemini API Error:', geminiResponse.status, errorData);
+            return res.status(geminiResponse.status).json({ 
+                error: 'Gemini API call failed.', 
+                details: errorData.substring(0, 100) // Truncate details for security
+            });
+        }
+        
+        // 4. Set up the Response Headers for Streaming
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.flushHeaders();
+
+        // 5. Stream the Response back to the client
+        const reader = geminiResponse.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+
+            // Vercel serverless function outputs to the response stream
+            res.write(chunk);
         }
 
-        // 5. 設置標頭並管道轉發 (Streaming)
-        // 告訴瀏覽器這是純文本串流
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
+        // 6. Close the response stream
+        res.end();
 
-        // 將 Gemini 的原始回應流直接轉發給客戶端，實現逐字元輸出
-        // 使用 pipe 實現高效的資料轉發
-        geminiResponse.body.pipe(res);
-        
     } catch (error) {
-        console.error('Proxy Execution Error:', error);
-        res.status(500).send('Internal Server Error during API processing.');
+        console.error('Proxy Fetch Error:', error);
+        res.status(500).end(`Proxy server error: ${error.message}`);
     }
 }
