@@ -6,7 +6,5 @@
   "scripts": {
     "build": "echo 'Static assets build complete.' && exit 0"
   },
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  }
+  "dependencies": {}
 }
