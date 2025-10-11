@@ -1,0 +1,12 @@
+{
+  "name": "ai-chatbox-proxy",
+  "version": "1.0.0",
+  "description": "Proxy for secure Gemini API calls.",
+  "main": "api/chat.js",
+  "scripts": {
+    "build": "echo 'Static assets build complete.' && exit 0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
