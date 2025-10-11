@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 性教育輔導 - 安全雲端版</title>
+    <!-- 適用於 iPad 模擬 App 的設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/1a202c/ffffff?text=SexEd">
+
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 使用 Poppins 字體 - 更年輕活力 */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            50% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        }
+        
+        #modern-app {
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .ipad-frame {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        #input-area {
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Old School Styles */
+        .old-school-page {
+            background: #c0c0c0;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .old-school-box {
+            background: #ffffff;
+            border: 3px solid #808080;
+            box-shadow: 3px 3px 0px #000000;
+        }
+        
+        .old-school-button {
+            background: #c0c0c0;
+            border: 2px outset #ffffff;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            padding: 8px 24px;
+            cursor: pointer;
+        }
+        
+        .old-school-button:active {
+            border-style: inset;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .blink {
+            animation: blink 1s step-start infinite;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        
+        /* Transition Page Styles */
+        @keyframes morphBackground {
+            0% { background: #000000; }
+            25% { background: #1a1a2e; }
+            50% { background: #16213e; }
+            75% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%); }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        }
+        
+        @keyframes colorShift {
+            0% { color: #00ff00; }
+            50% { color: #00ffff; }
+            75% { color: #ff00ff; }
+            100% { color: #ffffff; }
+        }
+        
+        @keyframes fontTransform {
+            0% { 
+                font-family: 'Courier New', monospace; 
+                font-size: 18px;
+            }
+            100% { 
+                font-family: 'Poppins', sans-serif; 
+                font-size: 28px;
+            }
+        }
+        
+        .morphing-bg {
+            animation: morphBackground 4s ease-in-out forwards;
+        }
+        
+        .color-shift {
+            animation: colorShift 3s ease-in-out forwards;
+        }
+        
+        .font-transform {
+            animation: fontTransform 3s ease-in-out forwards;
+        }
+        
+        @keyframes scaleUp {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .scale-up {
+            animation: scaleUp 1s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Old School Landing Page -->
+    <div id="old-school-page" class="old-school-page w-full h-screen flex items-center justify-center">
+        <div class="old-school-box p-12 max-w-2xl mx-4">
+            <h1 style="font-size: 24px; margin-bottom: 20px; text-align: center; font-weight: bold;">
+                AI Sex Education System v1.0
+            </h1>
+            <hr style="border: 1px solid #808080; margin: 20px 0;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: center;">
+                Welcome to the Artificial Intelligence Sexual Education Advisory System.<br>
+                Copyright © 1995-2025. All Rights Reserved.<br><br>
+                Press the button below to initialize the system.
+            </p>
+            <div style="text-align: center;">
+                <button class="old-school-button" onclick="startSystem()">
+                    START SYSTEM
+                </button>
+            </div>
+            <p style="font-size: 12px; margin-top: 30px; text-align: center; color: #666;">
+                System Requirements: 486DX/33MHz or higher, 8MB RAM, VGA Display
+            </p>
+        </div>
+    </div>
+
+    <!-- Loading/Transition Page -->
+    <div id="loading-page" class="hidden w-full h-screen flex items-center justify-center bg-black">
+        <div class="text-center px-4">
+            <div id="loading-content" style="font-family: 'Courier New', monospace; color: #00ff00; font-size: 18px; line-height: 1.8;">
+                <p id="init-text">INITIALIZING SYSTEM...</p>
+                <p id="loading-text">LOADING MODULES... [<span id="progress">0</span>%]</p>
+                <p class="blink" id="cursor">_</p>
+            </div>
+            <div id="transition-content" style="display: none; margin-top: 60px;">
+                <p id="joke-text" style="font-family: 'Courier New', monospace; color: #00ff00; font-size: 24px; margin-bottom: 40px;">
+                    Just kidding!<br>
+                    We're not that old fashion! 😄
+                </p>
+                <p id="upgrade-text" class="color-shift font-transform" style="font-family: 'Courier New', monospace; color: #00ff00; font-size: 18px; margin-top: 30px; display: none;">
+                    🚀 Upgrading to modern interface...<br>
+                    ✨ Adding colors and gradients...<br>
+                    💫 Initializing smooth animations...<br>
+                    🎨 Loading beautiful design...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern App (Hidden Initially) -->
+    <div id="modern-app" class="hidden w-full h-screen flex items-center justify-center p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <!-- iPad 模擬邊框 -->
+        <div class="ipad-frame w-full max-w-4xl h-[90vh] bg-white/95 rounded-3xl flex flex-col overflow-hidden">
+        
+        <!-- Header (狀態欄) -->
+        <header id="header-bar" class="p-5 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 flex justify-between items-center text-white shadow-lg">
+            <div class="flex items-center space-x-2">
+                <span id="ai-status" class="text-sm font-semibold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">✨ 已連線</span>
+            </div>
+            <div class="text-xl font-bold" id="mode-display">
+                💬 AI 輔導對話
+            </div>
+            <button id="mode-toggle-btn" 
+                    onclick="toggleMode()"
+                    class="px-4 py-2 bg-white/90 hover:bg-white text-purple-600 text-sm font-semibold rounded-full transition duration-200 active:scale-95 shadow-lg hover:shadow-xl">
+                🎯 進入測驗
+            </button>
+        </header>
+
+        <!-- 主內容區 -->
+        <main class="flex-grow p-6 overflow-y-auto hide-scrollbar relative bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+            
+            <!-- Chat Mode -->
+            <div id="chat-mode-view" class="space-y-4">
+                <div id="messages-container" class="space-y-4 pb-4">
+                    <!-- 歡迎訊息 -->
+                    <div class="flex justify-start message-slide-in">
+                        <div class="bg-gradient-to-br from-purple-500 to-pink-500 text-white p-4 rounded-2xl rounded-tl-sm max-w-lg shadow-xl">
+                            <p class="text-sm font-bold mb-2 flex items-center">🤖 AI 輔導員</p>
+                            <p class="leading-relaxed">您好！我是一位經過專業配置的 AI 輔導員。請隨意提出關於青春期、身體變化、親密關係或安全界線的問題。我會提供準確且中立的資訊。✨</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quiz Mode -->
+            <div id="quiz-mode-view" class="hidden flex flex-col items-center justify-center min-h-full p-4">
+                <div class="w-full max-w-xl bg-white p-8 rounded-3xl shadow-2xl border-4 border-purple-300">
+                    <h2 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 pb-3 border-b-2 border-purple-200">🎯 性教育知識測驗</h2>
+                    <div id="quiz-content" class="text-gray-800">
+                        <p class="text-lg font-medium text-center">點擊下方按鈕開始測驗！🚀</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 輸入區 -->
+        <footer id="input-area" class="bg-white p-5 border-t-2 border-purple-200">
+            <div id="chat-input-container" class="flex space-x-3">
+                <input type="text" id="user-input" placeholder="💭 請輸入您的問題..."
+                       class="flex-grow p-4 bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border-2 border-purple-300 rounded-full focus:outline-none focus:ring-4 focus:ring-purple-300 placeholder-purple-400 transition duration-200 font-medium">
+                <button id="send-btn" onclick="sendMessage()"
+                        class="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full transition duration-200 active:scale-95 shadow-lg hover:shadow-xl">
+                    🚀 發送
+                </button>
+            </div>
+            <div id="quiz-prompt" class="hidden text-center text-purple-600 py-2 font-medium">
+                📝 請在測驗區塊完成作答。
+            </div>
+        </footer>
+
+        </div><!-- End of iPad frame -->
+    </div><!-- End of modern-app -->
+
+    <script>
+        // --- Page Transition Logic ---
+        function startSystem() {
+            const oldSchoolPage = document.getElementById('old-school-page');
+            const loadingPage = document.getElementById('loading-page');
+            const modernApp = document.getElementById('modern-app');
+            const loadingContent = document.getElementById('loading-content');
+            const transitionContent = document.getElementById('transition-content');
+            const upgradeText = document.getElementById('upgrade-text');
+            const cursor = document.getElementById('cursor');
+            
+            // Fade out old school page
+            oldSchoolPage.classList.add('fade-out');
+            
+            setTimeout(() => {
+                oldSchoolPage.classList.add('hidden');
+                loadingPage.classList.remove('hidden');
+                loadingPage.classList.add('fade-in');
+                
+                // Simulate loading progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 25;
+                    if (progress > 100) progress = 100;
+                    document.getElementById('progress').textContent = Math.floor(progress);
+                    
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        
+                        // Hide cursor and fade out loading content
+                        cursor.style.display = 'none';
+                        
+                        setTimeout(() => {
+                            loadingContent.classList.add('fade-out');
+                            
+                            setTimeout(() => {
+                                loadingContent.style.display = 'none';
+                                transitionContent.style.display = 'block';
+                                
+                                // Show the joke text
+                                setTimeout(() => {
+                                    // Start background morphing
+                                    loadingPage.classList.add('morphing-bg');
+                                    
+                                    // Show upgrade text after joke
+                                    setTimeout(() => {
+                                        upgradeText.style.display = 'block';
+                                        
+                                        // Wait for animations to complete
+                                        setTimeout(() => {
+                                            // Final transition to modern app
+                                            loadingPage.classList.add('fade-out');
+                                            
+                                            setTimeout(() => {
+                                                loadingPage.classList.add('hidden');
+                                                modernApp.classList.remove('hidden');
+                                                modernApp.classList.add('scale-up');
+                                            }, 800);
+                                        }, 4000); // Wait for morphing animations
+                                    }, 1500); // Delay before showing upgrade text
+                                }, 300);
+                            }, 500);
+                        }, 500);
+                    }
+                }, 150);
+            }, 500);
+        }
+        
+        // --- 核心配置 ---
+        let currentMode = 'chat'; 
+        
+        // 關鍵：指向 Vercel 部署的 Serverless Function 路徑
+        // Vercel 會自動將 /api/chat 映射到您部署的 chat.js 檔案
+        const API_URL = '/api/chat'; 
+        
+        // Gemini 模型配置與系統指令 (確保專業性)
+        const SYSTEM_INSTRUCTION = "你是一位專業、中立且富有同理心的青少年性教育輔導員。你的回答必須簡潔、安全、客觀，並使用適合青少年的語言。避免給予醫療建議，並始終強調同意權和個人安全。";
+
+        // --- 測驗相關變數與題庫 ---
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        const quizQuestions = [
+            {
+                question: "1. 青春期身體發育的開始通常由什麼激素觸發？",
+                options: ["雌激素 (Estrogen)", "睪固酮 (Testosterone)", "生長激素 (Growth Hormone)", "胰島素 (Insulin)"],
+                correctAnswer: "雌激素 (Estrogen)",
+                explanation: "青春期發育是由腦下垂體釋放的激素刺激卵巢或睪丸產生雌激素或睪酮所觸發的。"
+            },
+            {
+                question: "2. 什麼是『同意權 (Consent)』的關鍵要素？",
+                options: ["只需要保持沉默即可", "必須是自願、清晰且持續的", "只需要成年人同意", "必須是單方面的"],
+                correctAnswer: "必須是自願、清晰且持續的",
+                explanation: "同意必須是自願給予的、清晰明確的，並且可以隨時撤回（持續性）。"
+            },
+            {
+                question: "3. 網路親密行為中最常見的風險是什麼？",
+                options: ["手機電量不足", "圖片檔案過大", "失去對照片和訊息的控制權", "上傳速度慢"],
+                correctAnswer: "失去對照片和訊息的控制權",
+                explanation: "一旦私密內容發送出去，就永遠無法保證它不會被複製、分享或濫用。"
+            },
+            {
+                question: "4. 以下哪項不是性傳染病（STI）的預防方法？",
+                options: ["使用保險套", "接種疫苗（如 HPV）", "定期檢查", "共用牙刷"],
+                correctAnswer: "共用牙刷",
+                explanation: "共用牙刷與性傳染病預防無關。安全措施包括使用屏障、接種疫苗和定期篩檢。"
+            },
+            {
+                question: "5. 如果對自己的性傾向或性別認同感到困惑，最健康的下一步是？",
+                options: ["自己隱藏起來，不要告訴任何人", "尋求值得信任的成年人或專業人士諮詢", "立刻做出決定並公開", "在網路上尋找陌生人討論"],
+                correctAnswer: "尋求值得信任的成年人或專業人士諮詢",
+                explanation: "尋求專業輔導或與值得信任的成年人交流，是探索個人身份的最佳方式。"
+            }
+        ];
+
+
+        // --- 主要功能邏輯 ---
+
+        async function sendMessage() {
+            if (currentMode === 'quiz') return; 
+
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            renderUserMessage(message);
+            input.value = '';
+            
+            // 鎖定輸入和發送按鈕
+            input.disabled = true;
+            document.getElementById('send-btn').disabled = true;
+
+            await streamAIResponse(message);
+
+            // 解鎖輸入和發送按鈕
+            input.disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            input.focus();
+        }
+
+        // 串流 AI 回應 (呼叫 Vercel 代理)
+        async function streamAIResponse(prompt) {
+            const container = document.getElementById('messages-container');
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'flex justify-start message-slide-in';
+            aiMessage.innerHTML = `
+                <div class="bg-gradient-to-br from-purple-500 to-pink-500 text-white p-4 rounded-2xl rounded-tl-sm max-w-lg shadow-xl">
+                    <p class="text-sm font-bold mb-2 flex items-center">🤖 AI 輔導員</p>
+                    <div id="ai-response-${Date.now()}" class="text-base leading-relaxed"><span class="pulse-animation">💭 思考中...</span></div>
+                </div>
+            `;
+            container.appendChild(aiMessage);
+            const responseElement = aiMessage.querySelector('div.text-base');
+
+            // 滾動到底部
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                // 1. 向 Vercel 代理發送請求
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // 將 Gemini 所需的結構（包括系統指令）發送給 Vercel 代理
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    responseElement.innerHTML = `<span class="text-red-400">連線錯誤或密鑰無效:</span> 請檢查代理伺服器或 Vercel 環境變數。`;
+                    return;
+                }
+                
+                // 2. 處理串流
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                
+                responseElement.textContent = ''; // 清除 '...思考中'
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    // Vercel 代理會將原始回應串流轉發回來
+                    const chunk = decoder.decode(value, { stream: true });
+                    responseElement.textContent += chunk;
+                    container.scrollTop = container.scrollHeight;
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                responseElement.innerHTML = `<span class="text-red-400">網路或代理故障:</span> 請檢查連線或 Vercel 部署。`;
+            }
+        }
+
+        // 渲染使用者訊息 (與先前版本相同)
+        function renderUserMessage(text) {
+            const container = document.getElementById('messages-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'flex justify-end message-slide-in';
+            messageElement.innerHTML = `
+                <div class="bg-gradient-to-br from-blue-500 to-cyan-400 text-white p-4 rounded-2xl rounded-br-sm max-w-lg shadow-xl">
+                    <p class="text-base leading-relaxed font-medium">${text}</p>
+                </div>
+            `;
+            container.appendChild(messageElement);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 綁定 Enter 鍵 (與先前版本相同)
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // --- 測驗模式邏輯 (與先前版本相同) ---
+        function toggleMode() {
+            const chatView = document.getElementById('chat-mode-view');
+            const quizView = document.getElementById('quiz-mode-view');
+            const toggleBtn = document.getElementById('mode-toggle-btn');
+            const inputContainer = document.getElementById('chat-input-container');
+            const quizPrompt = document.getElementById('quiz-prompt');
+            const modeDisplay = document.getElementById('mode-display');
+
+            if (currentMode === 'chat') {
+                currentMode = 'quiz';
+                chatView.classList.add('hidden');
+                quizView.classList.remove('hidden');
+                toggleBtn.innerHTML = '💬 返回對話';
+                modeDisplay.innerHTML = '🎯 知識點測驗';
+                inputContainer.classList.add('hidden');
+                quizPrompt.classList.remove('hidden');
+                
+                currentQuestionIndex = 0;
+                currentScore = 0;
+                renderQuiz();
+
+            } else {
+                currentMode = 'chat';
+                chatView.classList.remove('hidden');
+                quizView.classList.add('hidden');
+                toggleBtn.innerHTML = '🎯 進入測驗';
+                modeDisplay.innerHTML = '💬 AI 輔導對話';
+                inputContainer.classList.remove('hidden');
+                quizPrompt.classList.add('hidden');
+            }
+        }
+
+        function renderQuiz() {
+            const quizContent = document.getElementById('quiz-content');
+
+            if (currentQuestionIndex >= quizQuestions.length) {
+                const scorePercent = Math.round((currentScore / quizQuestions.length) * 100);
+                const emoji = scorePercent >= 80 ? '🎉' : scorePercent >= 60 ? '👍' : '💪';
+                quizContent.innerHTML = `
+                    <div class="text-center p-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl border-2 border-purple-300">
+                        <div class="text-6xl mb-4">${emoji}</div>
+                        <h3 class="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">測驗完成！</h3>
+                        <p class="text-xl mb-4 text-gray-700">您的最終分數是：</p>
+                        <div class="text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent mb-4">${currentScore} / ${quizQuestions.length}</div>
+                        <p class="text-lg text-gray-600 mb-6">掌握度：${scorePercent}% 💯</p>
+                        <button onclick="toggleMode()" class="mt-4 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full transition duration-200 shadow-lg hover:shadow-xl active:scale-95">
+                            💬 返回對話模式
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const questionData = quizQuestions[currentQuestionIndex];
+            const optionsContainer = document.createElement('div');
+            optionsContainer.id = 'quiz-options';
+            optionsContainer.className = 'mt-4 space-y-3';
+            
+            let optionsHTML = '';
+            questionData.options.forEach((option, i) => {
+                optionsHTML += `
+                    <button onclick="checkAnswer(${i})" 
+                            id="option-btn-${i}"
+                            class="quiz-option-btn w-full p-5 my-2 text-left rounded-2xl transition-all 
+                                   bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 
+                                   border-2 border-purple-300 hover:border-purple-400
+                                   disabled:opacity-75 disabled:cursor-not-allowed text-base font-semibold shadow-md hover:shadow-lg
+                                   transform hover:scale-105 active:scale-95 text-gray-800">
+                        <span class="text-purple-600">${String.fromCharCode(65 + i)}.</span> ${option}
+                    </button>
+                `;
+            });
+
+            quizContent.innerHTML = `
+                <div class="mb-6">
+                    <p class="text-sm font-semibold text-purple-600 mb-3 bg-purple-100 inline-block px-4 py-2 rounded-full">📊 第 ${currentQuestionIndex + 1} 題 / 共 ${quizQuestions.length} 題</p>
+                    <h3 class="text-xl font-bold text-gray-800 leading-relaxed">${questionData.question}</h3>
+                </div>
+                ${optionsHTML}
+            `;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const question = quizQuestions[currentQuestionIndex];
+            const isCorrect = question.correctAnswer === question.options[selectedIndex];
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.querySelectorAll('button');
+
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.classList.remove('hover:from-purple-200', 'hover:to-pink-200', 'hover:scale-105', 'hover:border-purple-400'); 
+            });
+
+            buttons.forEach((button, index) => {
+                if (index === selectedIndex) {
+                    if (isCorrect) {
+                        button.className = 'quiz-option-btn w-full p-5 my-2 text-left rounded-2xl transition-all bg-gradient-to-r from-green-400 to-emerald-500 ring-4 ring-green-300 text-white font-bold shadow-xl';
+                        button.innerHTML = '✅ ' + button.innerHTML;
+                    } else {
+                        button.className = 'quiz-option-btn w-full p-5 my-2 text-left rounded-2xl transition-all bg-gradient-to-r from-red-400 to-pink-500 ring-4 ring-red-300 text-white font-bold shadow-xl';
+                        button.innerHTML = '❌ ' + button.innerHTML;
+                    }
+                }
+                
+                if (question.options[index] === question.correctAnswer && index !== selectedIndex) {
+                    button.className = 'quiz-option-btn w-full p-5 my-2 text-left rounded-2xl transition-all bg-gradient-to-r from-green-500 to-emerald-600 ring-4 ring-green-400 text-white font-bold shadow-xl';
+                    button.innerHTML = '✅ ' + button.innerHTML;
+                }
+            });
+
+            if (isCorrect) {
+                currentScore++;
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                renderQuiz();
+            }, 2000); 
+        }
+
+    </script>
+</body>
+</html>
