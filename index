@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 性教育輔導 - 安全雲端版</title>
+    <!-- 適用於 iPad 模擬 App 的設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/1a202c/ffffff?text=SexEd">
+
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 使用 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* 深色背景 */
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .ipad-frame {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        #input-area {
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+
+    <!-- iPad 模擬邊框 -->
+    <div class="ipad-frame w-full max-w-4xl h-[90vh] bg-gray-800 rounded-3xl flex flex-col overflow-hidden">
+        
+        <!-- Header (狀態欄) -->
+        <header id="header-bar" class="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center text-white">
+            <div class="flex items-center space-x-2">
+                <span id="ai-status" class="text-sm font-semibold text-green-400">✅ 已連線 (Gemini Proxy)</span>
+            </div>
+            <div class="text-lg font-bold" id="mode-display">
+                AI 輔導對話
+            </div>
+            <button id="mode-toggle-btn" 
+                    onclick="toggleMode()"
+                    class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-full transition duration-150 active:scale-95">
+                進入測驗模式
+            </button>
+        </header>
+
+        <!-- 主內容區 -->
+        <main class="flex-grow p-4 overflow-y-auto hide-scrollbar relative">
+            
+            <!-- Chat Mode -->
+            <div id="chat-mode-view" class="space-y-4">
+                <div id="messages-container" class="space-y-4 pb-4">
+                    <!-- 歡迎訊息 -->
+                    <div class="flex justify-start">
+                        <div class="bg-gray-700 text-white p-3 rounded-xl rounded-tl-none max-w-lg shadow-md">
+                            <p class="text-sm font-semibold text-indigo-300 mb-1">AI 輔導員</p>
+                            <p>您好！我是一位經過專業配置的 AI 輔導員。請隨意提出關於青春期、身體變化、親密關係或安全界線的問題。我會提供準確且中立的資訊。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quiz Mode -->
+            <div id="quiz-mode-view" class="hidden flex flex-col items-center justify-center min-h-full p-4">
+                <div class="w-full max-w-xl bg-gray-700 p-6 rounded-2xl shadow-2xl">
+                    <h2 class="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2">性教育知識測驗</h2>
+                    <div id="quiz-content" class="text-white">
+                        <p class="text-lg font-medium text-center">點擊下方按鈕開始測驗！</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 輸入區 -->
+        <footer id="input-area" class="bg-gray-800 p-4 border-t border-gray-700">
+            <div id="chat-input-container" class="flex space-x-3">
+                <input type="text" id="user-input" placeholder="請輸入您的問題..."
+                       class="flex-grow p-3 bg-gray-700 text-white border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 transition duration-150">
+                <button id="send-btn" onclick="sendMessage()"
+                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full transition duration-150 active:scale-95">
+                    發送
+                </button>
+            </div>
+            <div id="quiz-prompt" class="hidden text-center text-white py-2">
+                請在測驗區塊完成作答。
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 核心配置 ---
+        let currentMode = 'chat'; 
+        
+        // 關鍵：指向 Vercel 部署的 Serverless Function 路徑
+        // Vercel 會自動將 /api/chat 映射到您部署的 chat.js 檔案
+        const API_URL = '/api/chat'; 
+        
+        // Gemini 模型配置與系統指令 (確保專業性)
+        const SYSTEM_INSTRUCTION = "你是一位專業、中立且富有同理心的青少年性教育輔導員。你的回答必須簡潔、安全、客觀，並使用適合青少年的語言。避免給予醫療建議，並始終強調同意權和個人安全。";
+
+        // --- 測驗相關變數與題庫 ---
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        const quizQuestions = [
+            {
+                question: "1. 青春期身體發育的開始通常由什麼激素觸發？",
+                options: ["雌激素 (Estrogen)", "睪固酮 (Testosterone)", "生長激素 (Growth Hormone)", "胰島素 (Insulin)"],
+                correctAnswer: "雌激素 (Estrogen)",
+                explanation: "青春期發育是由腦下垂體釋放的激素刺激卵巢或睪丸產生雌激素或睪酮所觸發的。"
+            },
+            {
+                question: "2. 什麼是『同意權 (Consent)』的關鍵要素？",
+                options: ["只需要保持沉默即可", "必須是自願、清晰且持續的", "只需要成年人同意", "必須是單方面的"],
+                correctAnswer: "必須是自願、清晰且持續的",
+                explanation: "同意必須是自願給予的、清晰明確的，並且可以隨時撤回（持續性）。"
+            },
+            {
+                question: "3. 網路親密行為中最常見的風險是什麼？",
+                options: ["手機電量不足", "圖片檔案過大", "失去對照片和訊息的控制權", "上傳速度慢"],
+                correctAnswer: "失去對照片和訊息的控制權",
+                explanation: "一旦私密內容發送出去，就永遠無法保證它不會被複製、分享或濫用。"
+            },
+            {
+                question: "4. 以下哪項不是性傳染病（STI）的預防方法？",
+                options: ["使用保險套", "接種疫苗（如 HPV）", "定期檢查", "共用牙刷"],
+                correctAnswer: "共用牙刷",
+                explanation: "共用牙刷與性傳染病預防無關。安全措施包括使用屏障、接種疫苗和定期篩檢。"
+            },
+            {
+                question: "5. 如果對自己的性傾向或性別認同感到困惑，最健康的下一步是？",
+                options: ["自己隱藏起來，不要告訴任何人", "尋求值得信任的成年人或專業人士諮詢", "立刻做出決定並公開", "在網路上尋找陌生人討論"],
+                correctAnswer: "尋求值得信任的成年人或專業人士諮詢",
+                explanation: "尋求專業輔導或與值得信任的成年人交流，是探索個人身份的最佳方式。"
+            }
+        ];
+
+
+        // --- 主要功能邏輯 ---
+
+        async function sendMessage() {
+            if (currentMode === 'quiz') return; 
+
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            renderUserMessage(message);
+            input.value = '';
+            
+            // 鎖定輸入和發送按鈕
+            input.disabled = true;
+            document.getElementById('send-btn').disabled = true;
+
+            await streamAIResponse(message);
+
+            // 解鎖輸入和發送按鈕
+            input.disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            input.focus();
+        }
+
+        // 串流 AI 回應 (呼叫 Vercel 代理)
+        async function streamAIResponse(prompt) {
+            const container = document.getElementById('messages-container');
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'flex justify-start';
+            aiMessage.innerHTML = `
+                <div class="bg-gray-700 text-white p-3 rounded-xl rounded-tl-none max-w-lg shadow-md">
+                    <p class="text-sm font-semibold text-indigo-300 mb-1">AI 輔導員</p>
+                    <div id="ai-response-${Date.now()}" class="text-base">... 思考中</div>
+                </div>
+            `;
+            container.appendChild(aiMessage);
+            const responseElement = aiMessage.querySelector('div.text-base');
+
+            // 滾動到底部
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                // 1. 向 Vercel 代理發送請求
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // 將 Gemini 所需的結構（包括系統指令）發送給 Vercel 代理
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    responseElement.innerHTML = `<span class="text-red-400">連線錯誤或密鑰無效:</span> 請檢查代理伺服器或 Vercel 環境變數。`;
+                    return;
+                }
+                
+                // 2. 處理串流
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                
+                responseElement.textContent = ''; // 清除 '...思考中'
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    // Vercel 代理會將原始回應串流轉發回來
+                    const chunk = decoder.decode(value, { stream: true });
+                    responseElement.textContent += chunk;
+                    container.scrollTop = container.scrollHeight;
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                responseElement.innerHTML = `<span class="text-red-400">網路或代理故障:</span> 請檢查連線或 Vercel 部署。`;
+            }
+        }
+
+        // 渲染使用者訊息 (與先前版本相同)
+        function renderUserMessage(text) {
+            const container = document.getElementById('messages-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'flex justify-end';
+            messageElement.innerHTML = `
+                <div class="bg-indigo-600 text-white p-3 rounded-xl rounded-br-none max-w-lg shadow-md">
+                    <p class="text-base">${text}</p>
+                </div>
+            `;
+            container.appendChild(messageElement);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 綁定 Enter 鍵 (與先前版本相同)
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // --- 測驗模式邏輯 (與先前版本相同) ---
+        function toggleMode() {
+            const chatView = document.getElementById('chat-mode-view');
+            const quizView = document.getElementById('quiz-mode-view');
+            const toggleBtn = document.getElementById('mode-toggle-btn');
+            const inputContainer = document.getElementById('chat-input-container');
+            const quizPrompt = document.getElementById('quiz-prompt');
+            const modeDisplay = document.getElementById('mode-display');
+
+            if (currentMode === 'chat') {
+                currentMode = 'quiz';
+                chatView.classList.add('hidden');
+                quizView.classList.remove('hidden');
+                toggleBtn.textContent = '返回對話模式';
+                modeDisplay.textContent = '知識點測驗';
+                inputContainer.classList.add('hidden');
+                quizPrompt.classList.remove('hidden');
+                
+                currentQuestionIndex = 0;
+                currentScore = 0;
+                renderQuiz();
+
+            } else {
+                currentMode = 'chat';
+                chatView.classList.remove('hidden');
+                quizView.classList.add('hidden');
+                toggleBtn.textContent = '進入測驗模式';
+                modeDisplay.textContent = 'AI 輔導對話';
+                inputContainer.classList.remove('hidden');
+                quizPrompt.classList.add('hidden');
+            }
+        }
+
+        function renderQuiz() {
+            const quizContent = document.getElementById('quiz-content');
+
+            if (currentQuestionIndex >= quizQuestions.length) {
+                quizContent.innerHTML = `
+                    <div class="text-center p-6 bg-gray-600 rounded-xl">
+                        <h3 class="text-2xl font-bold mb-4 ${currentScore >= 3 ? 'text-green-400' : 'text-red-400'}">測驗完成！</h3>
+                        <p class="text-lg mb-4">您的最終分數是：<span class="text-3xl font-extrabold text-white">${currentScore}</span> / ${quizQuestions.length} 題</p>
+                        <p class="text-sm text-gray-300">您對核心知識的掌握度為 ${Math.round((currentScore / quizQuestions.length) * 100)}%。</p>
+                        <button onclick="toggleMode()" class="mt-6 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 font-semibold rounded-full transition duration-150">
+                            返回對話模式
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const questionData = quizQuestions[currentQuestionIndex];
+            const optionsContainer = document.createElement('div');
+            optionsContainer.id = 'quiz-options';
+            optionsContainer.className = 'mt-4 space-y-3';
+            
+            let optionsHTML = '';
+            questionData.options.forEach((option, i) => {
+                optionsHTML += `
+                    <button onclick="checkAnswer(${i})" 
+                            id="option-btn-${i}"
+                            class="quiz-option-btn w-full p-4 my-2 text-left rounded-lg transition-all 
+                                   bg-gray-800 hover:bg-gray-700 disabled:opacity-75 disabled:cursor-not-allowed text-base font-medium shadow-lg">
+                        ${String.fromCharCode(65 + i)}. ${option}
+                    </button>
+                `;
+            });
+
+            quizContent.innerHTML = `
+                <div class="mb-4">
+                    <p class="text-sm text-indigo-400 mb-2">第 ${currentQuestionIndex + 1} 題 / 共 ${quizQuestions.length} 題</p>
+                    <h3 class="text-xl font-bold text-white">${questionData.question}</h3>
+                </div>
+                ${optionsHTML}
+            `;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const question = quizQuestions[currentQuestionIndex];
+            const isCorrect = question.correctAnswer === question.options[selectedIndex];
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.querySelectorAll('button');
+
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.classList.remove('hover:bg-gray-700'); 
+            });
+
+            buttons.forEach((button, index) => {
+                if (index === selectedIndex) {
+                    if (isCorrect) {
+                        button.classList.add('bg-green-600', 'ring-2', 'ring-green-400');
+                    } else {
+                        button.classList.add('bg-red-600', 'ring-2', 'ring-red-400');
+                    }
+                }
+                
+                if (question.options[index] === question.correctAnswer) {
+                    button.classList.add('bg-green-700', 'ring-2', 'ring-green-400');
+                }
+                button.classList.remove('bg-gray-800');
+            });
+
+            if (isCorrect) {
+                currentScore++;
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                renderQuiz();
+            }, 2000); 
+        }
+
+    </script>
+</body>
+</html>
