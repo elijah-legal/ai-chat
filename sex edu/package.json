@@ -4,7 +4,9 @@
   "description": "Proxy for secure Gemini API calls.",
   "main": "api/chat.js",
   "scripts": {
-    "build": "echo 'Static assets build complete.' && exit 0"
+    "install": "echo 'Skipping npm install for this simple project.'",
+    "build": "mkdir -p public && cp index.html public/index.html && echo 'Static build complete.'",
+    "start": "node api/chat.js"
   },
   "dependencies": {}
 }
