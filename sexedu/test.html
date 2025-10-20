@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 連線測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #5B21B6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #4C1D95;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #D1FAE5;
+            border: 2px solid #10B981;
+            color: #065F46;
+        }
+        .error {
+            background: #FEE2E2;
+            border: 2px solid #EF4444;
+            color: #991B1B;
+        }
+        .info {
+            background: #DBEAFE;
+            border: 2px solid #3B82F6;
+            color: #1E40AF;
+        }
+        h1 { color: #5B21B6; }
+        h2 { color: #7C3AED; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔧 IntiMate API 連線測試工具</h1>
+        <p>使用此工具診斷 API 連線問題</p>
+
+        <h2>測試 1: 檢查 API 端點</h2>
+        <button onclick="testEndpoint()">測試端點可達性</button>
+        <div id="endpoint-result"></div>
+
+        <h2>測試 2: 測試 API 呼叫</h2>
+        <button onclick="testAPICall()">發送測試請求</button>
+        <div id="api-result"></div>
+
+        <h2>測試 3: 檢查環境</h2>
+        <button onclick="checkEnvironment()">檢查環境資訊</button>
+        <div id="env-result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+
+        async function testEndpoint() {
+            const resultDiv = document.getElementById('endpoint-result');
+            showResult('endpoint-result', '⏳ 測試中...', 'info');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: 'test' }] }],
+                        systemInstruction: { parts: [{ text: 'You are a test assistant.' }] }
+                    })
+                });
+
+                if (response.ok) {
+                    showResult('endpoint-result', 
+                        `✅ 端點測試成功！\n狀態碼: ${response.status}\nContent-Type: ${response.headers.get('content-type')}`,
+                        'success'
+                    );
+                } else {
+                    const errorText = await response.text();
+                    showResult('endpoint-result', 
+                        `❌ 端點回應錯誤\n狀態碼: ${response.status}\n回應內容: ${errorText.substring(0, 500)}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('endpoint-result', 
+                    `❌ 網路錯誤\n錯誤類型: ${error.name}\n錯誤訊息: ${error.message}\n\n可能原因:\n1. Vercel 函數未正確部署\n2. 路由配置錯誤\n3. CORS 問題`,
+                    'error'
+                );
+            }
+        }
+
+        async function testAPICall() {
+            showResult('api-result', '⏳ 發送測試請求中...', 'info');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ 
+                            parts: [{ text: '請說「你好」' }] 
+                        }],
+                        systemInstruction: { 
+                            parts: [{ text: '你是一個測試助手，請簡短回答。' }] 
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    showResult('api-result', 
+                        `❌ API 呼叫失敗\n狀態碼: ${response.status}\n錯誤詳情:\n${errorText}`,
+                        'error'
+                    );
+                    return;
+                }
+
+                // 讀取串流回應
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let fullResponse = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullResponse += chunk;
+                }
+
+                if (fullResponse.length > 0) {
+                    showResult('api-result', 
+                        `✅ API 呼叫成功！\n\n收到的回應:\n${fullResponse}\n\n回應長度: ${fullResponse.length} 字元`,
+                        'success'
+                    );
+                } else {
+                    showResult('api-result', 
+                        `⚠️ API 有回應但內容為空\n這可能表示:\n1. SSE 解析問題\n2. Gemini API 回應格式變更\n3. 模型名稱錯誤`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('api-result', 
+                    `❌ 請求過程發生錯誤\n錯誤: ${error.message}\n\n請檢查:\n1. GEMINI_API_KEY 是否已設置\n2. API 金鑰是否有效\n3. Gemini API 是否已啟用`,
+                    'error'
+                );
+            }
+        }
+
+        function checkEnvironment() {
+            const info = {
+                '瀏覽器': navigator.userAgent,
+                '當前網址': window.location.href,
+                '協議': window.location.protocol,
+                '主機': window.location.host,
+                'API 路徑': window.location.origin + '/api/chat',
+                '時間': new Date().toISOString()
+            };
+
+            let output = '📋 環境資訊:\n\n';
+            for (const [key, value] of Object.entries(info)) {
+                output += `${key}: ${value}\n`;
+            }
+
+            output += '\n⚠️ 檢查清單:\n';
+            output += '□ 確認已在 Vercel 設置 GEMINI_API_KEY\n';
+            output += '□ 確認已重新部署專案\n';
+            output += '□ 確認 vercel.json 配置正確\n';
+            output += '□ 確認 API 金鑰有效\n';
+
+            showResult('env-result', output, 'info');
+        }
+
+        // 頁面載入時自動檢查環境
+        window.onload = () => {
+            checkEnvironment();
+        };
+    </script>
+</body>
+</html>
+
